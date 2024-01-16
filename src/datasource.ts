@@ -27,11 +27,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     this.source = instanceSettings.jsonData.source;
     this.credentials = instanceSettings.jsonData.credentials;
-    this.context = { sources: [ this.source ], fetch: (input: any, options: any) => {
+    this.context = { sources: [ { type: 'sparql', value: this.source } ], fetch: (input: any, options: any) => {
       if (this.credentials) {
         if (!options) { options = {}; }
         if (!options.headers) { options.headers = {} }
-        if (!options.headers.authorization) { options.headers.authorization = 'Basic ' + this.credentials }      
+        if (!options.headers.authorization) { options.headers.authorization = 'Basic ' + this.credentials }
       }
       return fetch(input, options);
     }};
@@ -76,7 +76,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         fields: fields
       });
       data.push(frame);
-      // console.log(fields);
     }
     return { data };
   }
