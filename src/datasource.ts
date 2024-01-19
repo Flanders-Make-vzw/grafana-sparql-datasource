@@ -51,25 +51,33 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     let data = [];
     for (const target of options.targets) {
       let fields: Array<{ name: string, values: any[], type: FieldType }> = [];
-      let fieldMap = new Map<string, any>();
+      const results: any[] = [], selects: any[] = [];
 
       if (target.queryText) {
         const query = getTemplateSrv().replace(target.queryText, options.scopedVars);
-        console.log(query);
         await this.run(query, this.context, (bindings: any[]) => {
-          for (const [ key, value ] of bindings) {
-            let field = fieldMap.get(key.value);
-            if (field) {
-              field.values.push(value.value);
-            }
-            else {
-              fieldMap.set(key.value, { values: [ value.value ], type: FieldType.string });
-            }
+          results.push(bindings);
+          for (const b of bindings) {
+            selects[b[0].value] = true;
           }
         });
       }
-      for (let [ key, value ] of fieldMap) {
-        fields.push({ name: key, values: value.values, type: value.type });
+
+      const findValueInBindings = (bindings: any[], select: String) => {
+        for (let [ key, value ] of bindings) {
+          if (key.value === select) {
+            return value.value;
+          }
+        }
+        return null;
+      };
+
+      for (const s in selects) {
+        let values = [];
+        for (const bindings of results) {
+          values.push(findValueInBindings(bindings, s));
+        }
+        fields.push({ name: s, values: values, type: FieldType.string });
       }
       const frame = new MutableDataFrame({
         refId: target.refId,
