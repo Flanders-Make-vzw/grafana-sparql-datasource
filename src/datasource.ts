@@ -40,10 +40,15 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
   async run(query: string, context: any, callback: Function) {
     return new Promise(async (resolve, reject) => {
-      const bindingsStream = await this.engine.queryBindings(query, context);
-      bindingsStream.on('error', err => { reject(err); });
-      bindingsStream.on('end', resolve);
-      bindingsStream.on('data', bindings => { callback(bindings); });
+      try {
+        const bindingsStream = await this.engine.queryBindings(query, context);
+        bindingsStream.on('error', err => { reject(err); });
+        bindingsStream.on('end', resolve);
+        bindingsStream.on('data', bindings => { callback(bindings); });
+      }
+      catch (err) {
+        reject(err);
+      }
     });
   }
 
@@ -55,12 +60,19 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
       if (target.queryText) {
         const query = getTemplateSrv().replace(target.queryText, options.scopedVars);
-        await this.run(query, this.context, (bindings: any[]) => {
-          results.push(bindings);
-          for (const b of bindings) {
-            selects[b[0].value] = true;
-          }
-        });
+        try {
+          await this.run(query, this.context, (bindings: any[]) => {
+            results.push(bindings);
+            for (const b of bindings) {
+              selects[b[0].value] = true;
+            }
+          });
+        }
+        catch (err) {
+          console.log(err);
+          throw err;
+          return { data };
+        }
       }
 
       const findValueInBindings = (bindings: any[], select: String) => {
