@@ -130,9 +130,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     let values: any[] = [];
 
     await this.run(query, this.context, (bindings: any) => {
-      if (bindings.has('value')) {
-        values.push({ text: bindings.get('value').value });
+      const value = (bindings.has('value') ? bindings.get('value').value : '')
+      const metric = {
+        text: (bindings.has('label') ? bindings.get('label').value : value),
+        value: value
       }
+        values.push(metric);
     });
     return values;
   }  
