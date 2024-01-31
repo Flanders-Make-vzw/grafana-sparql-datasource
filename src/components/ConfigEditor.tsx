@@ -2,7 +2,7 @@
 
 import React, { ChangeEvent } from 'react';
 import { Buffer } from 'buffer';
-import { InlineField, Input } from '@grafana/ui';
+import { InlineField, Input, InlineSwitch } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { MyDataSourceOptions, MySecureJsonData } from '../types';
 
@@ -14,6 +14,14 @@ export function ConfigEditor(props: Props) {
     const jsonData = {
       ...options.jsonData,
       source: event.target.value
+    };
+    onOptionsChange({ ...options, jsonData });
+  };
+
+  const onProxyChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const jsonData = {
+      ...options.jsonData,
+      proxy: event.target.checked
     };
     onOptionsChange({ ...options, jsonData });
   };
@@ -69,6 +77,13 @@ export function ConfigEditor(props: Props) {
           value={secureJsonData.password || ''}
           placeholder="(to generate authentication token)"
           width={40}
+        />
+      </InlineField>
+      <InlineField label="Proxy" labelWidth={12}>
+        <InlineSwitch
+          onChange={onProxyChange}
+          value={jsonData.proxy ?? false}
+          transparent={false}
         />
       </InlineField>
     </div>

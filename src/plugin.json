@@ -4,6 +4,8 @@
   "name": "SPARQL",
   "id": "flandersmake-sparql-datasource",
   "metrics": true,
+  "alerting": false,
+  "backend": false,
   "info": {
     "description": "Data source for SPARQL endpoints",
     "author": {
@@ -19,6 +21,13 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
+  "routes": [
+    {
+      "method": "POST",
+      "path": "source",
+      "url": "{{ .JsonData.source }}"
+    }
+  ],
   "dependencies": {
     "grafanaDependency": ">=10.0.3",
     "plugins": []
