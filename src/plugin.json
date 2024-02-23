@@ -17,7 +17,16 @@
       "large": "img/logo.svg"
     },
     "links": [],
-    "screenshots": [],
+    "screenshots": [
+      {
+        "name": "SPARQL query feeding data to a directed graph",
+        "path": "img/screenshot1.jpg"
+      },
+      {
+        "name": "SPARQL data source configuration",
+        "path": "img/screenshot2.jpg"
+      }
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
