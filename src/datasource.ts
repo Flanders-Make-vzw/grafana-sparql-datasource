@@ -20,8 +20,6 @@ import { MyQuery, MyDataSourceOptions } from './types';
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   url: string;
   source?: string;
-  credentials?: string;
-  proxy: boolean;
   context: any;
   engine: QueryEngine;
 
@@ -30,24 +28,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     this.url = instanceSettings.url!;
     this.source = instanceSettings.jsonData.source;
-    this.credentials = instanceSettings.jsonData.credentials;
-    this.proxy = instanceSettings.jsonData.proxy;
     this.context = { sources: [ { type: 'sparql', value: this.source } ], fetch: async (input: any, options: any) => {
-      if (this.credentials) {
-        if (!options) { options = {}; }
-        if (!options.headers) { options.headers = {} }
-        if (!options.headers.authorization) { options.headers.authorization = 'Basic ' + this.credentials }
-      }
-      if (this.proxy) {
-        console.log('server-side request');
-        const response = getBackendSrv().fetch({ method: 'POST', url: this.url + '/source', headers: options?.headers || {}, data: options.body });
-        const value = await lastValueFrom(response);
-        return new Response(JSON.stringify(value.data), { headers: value.headers });
-      }
-      else {
-        console.log('client-side request');
-        return fetch(input, options);
-      }
+      const response = getBackendSrv().fetch({ method: 'POST', url: this.url + '/source', headers: options?.headers || {}, data: options.body });
+      const value = await lastValueFrom(response);
+      return new Response(JSON.stringify(value.data), { headers: value.headers });
     }};
     this.engine = new QueryEngine();
   }
@@ -83,7 +67,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           });
         }
         catch (err) {
-          console.log(err);
           throw err;
           return { data };
         }

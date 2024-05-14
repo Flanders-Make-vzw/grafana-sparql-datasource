@@ -34,7 +34,13 @@
     {
       "method": "POST",
       "path": "source",
-      "url": "{{ .JsonData.source }}"
+      "url": "{{ .JsonData.source }}",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Basic {{ .SecureJsonData.bearer }}"
+        }
+      ]
     }
   ],
   "dependencies": {

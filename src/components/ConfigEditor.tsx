@@ -2,63 +2,48 @@
 
 import React, { ChangeEvent } from 'react';
 import { Buffer } from 'buffer';
-import { InlineField, Input, InlineSwitch } from '@grafana/ui';
+import { InlineField, Input, SecretInput } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { MyDataSourceOptions, MySecureJsonData } from '../types';
 
 interface Props extends DataSourcePluginOptionsEditorProps<MyDataSourceOptions> {}
 
 export function ConfigEditor(props: Props) {
-  const { onOptionsChange, options } = props;
-  const onSourceChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const jsonData = {
-      ...options.jsonData,
-      source: event.target.value
-    };
-    onOptionsChange({ ...options, jsonData });
-  };
+  const { options } = props;
+  const { jsonData } = options;
+  const secureJsonData = (options.secureJsonData || {}) as MySecureJsonData;
 
-  const onProxyChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const jsonData = {
-      ...options.jsonData,
-      proxy: event.target.checked
-    };
+  const onOptionsChange = (opts: any) => {
+    if (opts.jsonData?.username && opts.secureJsonData?.password) {
+      opts.secureJsonData.bearer = Buffer.from(opts.jsonData.username + ':' + opts.secureJsonData.password).toString('base64');
+      opts.basicAuth = true;
+      opts.basicAuthUser = opts.jsonData.username;
+    }
+    props.onOptionsChange(opts);
+  }
+
+  const onSourceChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const jsonData = { ...options.jsonData, source: event.target.value };
     onOptionsChange({ ...options, jsonData });
   };
 
   const onUsernameChange = (event: ChangeEvent<HTMLInputElement>) => {
-    secureJsonData.username = event.target.value;
-    const jsonData = {
-      ...options.jsonData,
-      credentials: generateCredentials(secureJsonData.username, secureJsonData.password)
-    };
-    onOptionsChange({ ...options, jsonData, secureJsonData });
+    const jsonData = { ...options.jsonData, username: event.target.value };
+    onOptionsChange({ ...options, jsonData });
   };
 
   const onPasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const secureJsonData = (options.secureJsonData || {}) as MySecureJsonData;
     secureJsonData.password = event.target.value;
-    const jsonData = {
-      ...options.jsonData,
-      credentials: generateCredentials(secureJsonData.username, secureJsonData.password)
-    };
-    onOptionsChange({ ...options, jsonData, secureJsonData });
+    onOptionsChange({ ...options, secureJsonData });
   };
-
-  const generateCredentials = (username?: string, password?: string) => {
-    const u = username? username.trim() : '';
-    const p = password? password.trim() : '';
-    return Buffer.from(u + ':' + p).toString('base64');
-  }
-
-  const { jsonData } = options;
-  const secureJsonData = (options.secureJsonData || {}) as MySecureJsonData;
 
   return (
     <div className="gf-form-group">
       <InlineField label="Source" labelWidth={12}>
         <Input
           onChange={onSourceChange}
-          value={jsonData.source || ''}
+          value={jsonData?.source || ''}
           placeholder="SPARQL endpoint URL"
           width={40}
         />
@@ -66,24 +51,19 @@ export function ConfigEditor(props: Props) {
       <InlineField label="Username" labelWidth={12}>
         <Input
           onChange={onUsernameChange}
-          value={secureJsonData.username || ''}
-          placeholder="(to generate authentication token)"
+          value={jsonData?.username || ''}
+          placeholder="Basic authentication username"
           width={40}
         />
       </InlineField>
       <InlineField label="Password" labelWidth={12}>
-        <Input
+        <SecretInput
           onChange={onPasswordChange}
-          value={secureJsonData.password || ''}
-          placeholder="(to generate authentication token)"
+          value={secureJsonData?.password || ''}
+          placeholder="Basic authentication password"
           width={40}
-        />
-      </InlineField>
-      <InlineField label="Proxy" labelWidth={12}>
-        <InlineSwitch
-          onChange={onProxyChange}
-          value={jsonData.proxy ?? false}
-          transparent={false}
+          isConfigured={false}
+          onReset={() => {}}
         />
       </InlineField>
     </div>

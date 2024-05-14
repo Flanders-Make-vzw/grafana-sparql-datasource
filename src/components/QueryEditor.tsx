@@ -1,27 +1,47 @@
-import React, { ChangeEvent } from 'react';
-import { InlineField, TextArea } from '@grafana/ui';
-import { QueryEditorProps } from '@grafana/data';
+import React, { useCallback } from 'react';
+import { css } from '@emotion/css';
+import { CodeEditor, useStyles2 } from '@grafana/ui';
+import { QueryEditorProps, GrafanaTheme2 } from '@grafana/data';
 import { DataSource } from '../datasource';
 import { MyDataSourceOptions, MyQuery } from '../types';
 
-import './style.css';
-
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>;
 
-export function QueryEditor({ query, onChange, onRunQuery }: Props) {
-  const onKeyDown = (event: any) => {
-    if (event.key === 'Tab') {
-      const textarea = event.target;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      textarea.value = textarea.value.substring(0, start) + '   ' + textarea.value.substring(end);
-      textarea.focus();
-      event.preventDefault()
-    }
-  };
-  const onQueryTextChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    onChange({ ...query, queryText: event.target.value });
-  };
+type ChangeOptions<T> = {
+  propertyName: keyof T;
+  runQuery: boolean;
+};
+
+type OnChangeType = (value: string) => void;
+
+export function useChangeString(props: Props, options: ChangeOptions<MyQuery>): OnChangeType {
+  const { onChange, onRunQuery, query } = props;
+  const { propertyName, runQuery } = options;
+
+  return useCallback(
+    (value: string) => {
+      if (!value) {
+        return;
+      }
+
+      onChange({
+        ...query,
+        [propertyName]: value,
+      });
+
+      if (runQuery) {
+        onRunQuery();
+      }
+    },
+    [onChange, onRunQuery, query, propertyName, runQuery]
+  );
+}
+
+export function QueryEditor(props: Props) {
+  const { query, } = props;
+  const styles = useStyles2(getStyles);
+
+  const onQueryTextChange = useChangeString(props, { propertyName: 'queryText', runQuery: true });
 
   const { queryText } = query;
   const numberOfLines = queryText? queryText.split('\n').length + 1 : 1;
@@ -32,15 +52,22 @@ export function QueryEditor({ query, onChange, onRunQuery }: Props) {
   }
 
   return (
-    <div className="gf-form">
-      <InlineField label="SPARQL query" labelWidth={16}>
-        <div className="editor">
-          <div className="line-numbers">
-            { lines.map((i) => (<span key={i}></span>)) }
-          </div>
-          <TextArea className="lined" cols={75} onKeyDown={onKeyDown} onChange={onQueryTextChange} value={queryText || ''}/>
-        </div>
-      </InlineField>
+    <div className={styles.editor}>
+      <CodeEditor
+        height="200px"
+        showLineNumbers={true}
+        language="sparql"
+        onBlur={onQueryTextChange}
+        value={query.queryText || ''}
+      />
     </div>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    editor: css`
+      margin: ${theme.spacing(0, 0.5, 0.5, 0)};
+    `,
+  };
 }
