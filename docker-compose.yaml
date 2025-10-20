@@ -1,5 +1,3 @@
-version: '3.0'
-
 services:
   grafana:
     container_name: 'flandersmake-sparql-datasource'
@@ -12,5 +10,5 @@ services:
     ports:
       - 3010:3000/tcp
     volumes:
-      - ./dist:/var/lib/grafana/plugins/flandersmake-sparql-datasource
-      - ./provisioning:/etc/grafana/provisioning
+      - "${HOST_WORKSPACE}/dist:/var/lib/grafana/plugins/flandersmake-sparql-datasource"
+      - "${HOST_WORKSPACE}/provisioning:/etc/grafana/provisioning"
