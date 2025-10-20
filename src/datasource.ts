@@ -126,7 +126,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   async metricFindQuery(query: string, options?: any) {
     let values: any[] = [];
 
-    await this.run(query, this.context, (bindings: any) => {
+    // Added on suggestion of Diederik Verscheure (issue #4) 
+    const interpolatedQuery = getTemplateSrv().replace(query, options?.scopedVars);
+
+    await this.run(interpolatedQuery, this.context, (bindings: any) => {
       const value = (bindings.has('value') ? bindings.get('value').value : '')
       const metric = {
         text: (bindings.has('label') ? bindings.get('label').value : value),
