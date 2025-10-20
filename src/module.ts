@@ -1,3 +1,5 @@
+/* Copyright (C) 2023-2025 Flanders Make - CodesignS */
+
 import { DataSourcePlugin } from '@grafana/data';
 import { DataSource } from './datasource';
 import { ConfigEditor } from './components/ConfigEditor';

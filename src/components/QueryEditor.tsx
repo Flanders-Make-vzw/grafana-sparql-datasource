@@ -1,3 +1,5 @@
+/* Copyright (C) 2023-2025 Flanders Make - CodesignS */
+
 import React, { useCallback } from 'react';
 import { css } from '@emotion/css';
 import { CodeEditor, useStyles2 } from '@grafana/ui';

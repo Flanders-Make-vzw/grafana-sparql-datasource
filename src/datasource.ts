@@ -1,4 +1,4 @@
-/* Copyright (C) 2023 Flanders Make - CodesignS */
+/* Copyright (C) 2023-2025 Flanders Make - CodesignS */
 
 import {
   DataQueryRequest,
